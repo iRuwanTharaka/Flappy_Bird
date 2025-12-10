@@ -134,7 +134,6 @@ You may have some extra files (e.g. temp files) — those are not essential.
 ## Credits & Acknowledgments
 
 - Project created by **You (iRuwanTharaka)**.
-- If you used any tutorials, assets, or external resources (for images, sprites, sounds) — list them here (with links).
 - Inspired by the original _Flappy Bird_ game.
 
 ## License
@@ -148,20 +147,3 @@ Copyright (c) [2025] [iRuwanTharaka]
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-- If you used any tutorials, assets, or external resources (for images, sprites, sounds) — list them here (with links).
-- Inspired by the original _Flappy Bird_ game.
-
-## License
-Copyright (c) [2025] [iRuwanTharaka]
