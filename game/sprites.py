@@ -1,6 +1,6 @@
 """Sprite classes for the Flappy Bird game."""
 import pygame
-from .config import IMAGE_PATHS, SCROLL_SPEED, PIPE_GAP, SCREEN_HEIGHT, WHITE
+from .config import IMAGE_PATHS, SCROLL_SPEED, PIPE_GAP, SCREEN_HEIGHT, WHITE, GROUND_HEIGHT
 
 
 class Bird(pygame.sprite.Sprite):
@@ -22,7 +22,7 @@ class Bird(pygame.sprite.Sprite):
             self.vel += 0.5
             if self.vel > 8:
                 self.vel = 8
-            if self.rect.bottom < 768:
+            if self.rect.bottom < GROUND_HEIGHT:
                 self.rect.y += self.vel
         
         if not game_over and flying:

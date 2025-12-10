@@ -3,8 +3,9 @@ import pygame
 import os
 
 # Screen settings
-SCREEN_WIDTH = 864
-SCREEN_HEIGHT = 936
+# Slightly smaller default window so it fits on more displays
+SCREEN_WIDTH = 720
+SCREEN_HEIGHT = 840
 FPS = 60
 
 # Initialize pygame fonts
@@ -29,7 +30,9 @@ API_BASE_URL = "http://localhost:3000/api"
 SCROLL_SPEED = 4
 PIPE_GAP = 150
 PIPE_FREQUENCY = 1500
-GROUND_HEIGHT = 768
+# Ground sprite is 168px tall; keep it anchored to the bottom of the screen
+GROUND_IMAGE_HEIGHT = 168
+GROUND_HEIGHT = SCREEN_HEIGHT - GROUND_IMAGE_HEIGHT
 
 # Heart puzzle settings
 HEART_TIME_LIMIT = 30  # seconds
@@ -42,6 +45,10 @@ _IMG_DIR = os.path.join(_PARENT_DIR, 'img')
 
 IMAGE_PATHS = {
     'bg': os.path.join(_IMG_DIR, "bg.png"),
+    'home': os.path.join(_IMG_DIR, "home.png"),
+    'heartbg': os.path.join(_IMG_DIR, "heartbg.png"),
+    'dp': os.path.join(_IMG_DIR, "dp.png"),
+    'cover': os.path.join(_IMG_DIR, "cover.png"),
     'ground': os.path.join(_IMG_DIR, "ground.png"),
     'restart': os.path.join(_IMG_DIR, "restart.png"),
     'pipe': os.path.join(_IMG_DIR, "pipe.png"),

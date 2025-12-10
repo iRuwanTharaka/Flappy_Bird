@@ -2,7 +2,7 @@
 import pygame
 from .config import (
     SCREEN_WIDTH, SCREEN_HEIGHT, FONT, SMALL_FONT, LARGE_FONT, TINY_FONT,
-    WHITE, BLACK, RED, GREEN, BLUE, GRAY
+    WHITE, BLACK, RED, GREEN, BLUE, GRAY, GROUND_HEIGHT, IMAGE_PATHS
 )
 from .sprites import TextButton
 from .game_state import ScreenState
@@ -39,31 +39,72 @@ class ScreenRenderer:
         self.screen = screen
         self.game_state = game_state
         self.api_client = api_client
+        # Auth (login/register) background
+        self.auth_bg = pygame.transform.scale(
+            pygame.image.load(IMAGE_PATHS['cover']),
+            (SCREEN_WIDTH, SCREEN_HEIGHT)
+        )
+        # Home background image
+        self.home_bg = pygame.transform.scale(
+            pygame.image.load(IMAGE_PATHS['home']),
+            (SCREEN_WIDTH, SCREEN_HEIGHT)
+        )
+        # Heart puzzle background image
+        self.heart_bg = pygame.transform.scale(
+            pygame.image.load(IMAGE_PATHS['heartbg']),
+            (SCREEN_WIDTH, SCREEN_HEIGHT)
+        )
+        # Shared background for profile and leaderboard
+        self.profile_bg = pygame.transform.scale(
+            pygame.image.load(IMAGE_PATHS['dp']),
+            (SCREEN_WIDTH, SCREEN_HEIGHT)
+        )
     
     def draw_login_screen(self):
         """Draw login screen."""
-        self.screen.fill(BLACK)
-        draw_text(self.screen, "LOGIN", LARGE_FONT, WHITE, SCREEN_WIDTH // 2 - 100, 50)
+        # Background image
+        self.screen.blit(self.auth_bg, (0, 0))
+
+        # Layout helpers for centering form
+        form_width = 500
+        field_height = 50
+        center_x = SCREEN_WIDTH // 2 - form_width // 2
+
+        # Title centered with slight shadow
+        title_x = SCREEN_WIDTH // 2 - 90
+        draw_text(self.screen, "LOGIN", LARGE_FONT, BLACK, title_x - 2, 43)
+        draw_text(self.screen, "LOGIN", LARGE_FONT, WHITE, title_x, 40)
         
-        # Username field
+        # Username field (centered, placed lower on screen)
         draw_input_field(
-            self.screen, 200, 200, 464, 50,
+            self.screen, center_x, 460, form_width, field_height,
             self.game_state.login_username,
             self.game_state.current_input_field == "login_username",
-            "Username/Email"
+            "Username / Email"
         )
         
         # Password field
         draw_input_field(
-            self.screen, 200, 300, 464, 50,
+            self.screen, center_x, 540, form_width, field_height,
             "*" * len(self.game_state.login_password),
             self.game_state.current_input_field == "login_password",
             "Password"
         )
         
-        # Buttons
-        login_btn = TextButton(200, 400, 200, 50, "Login", SMALL_FONT, WHITE, GREEN, BLUE)
-        register_btn = TextButton(464, 400, 200, 50, "Register", SMALL_FONT, WHITE, BLUE, GREEN)
+        # Buttons centered under fields
+        btn_width = 200
+        btn_y = 630
+        dark_bg = (20, 20, 20)
+        hover_bg = (70, 130, 180)
+
+        login_btn = TextButton(
+            SCREEN_WIDTH // 2 - btn_width - 10, btn_y,
+            btn_width, 50, "Login", SMALL_FONT, WHITE, dark_bg, hover_bg
+        )
+        register_btn = TextButton(
+            SCREEN_WIDTH // 2 + 10, btn_y,
+            btn_width, 50, "Register", SMALL_FONT, WHITE, dark_bg, hover_bg
+        )
         
         if login_btn.draw(self.screen):
             success, message = self.api_client.login(
@@ -83,7 +124,14 @@ class ScreenRenderer:
         
         # Draw error message if present
         if self.game_state.login_error_message:
-            draw_text(self.screen, self.game_state.login_error_message, SMALL_FONT, RED, 200, 600)
+            draw_text(
+                self.screen,
+                self.game_state.login_error_message,
+                SMALL_FONT,
+                RED,
+                center_x,
+                740,
+            )
         
         if register_btn.draw(self.screen):
             self.game_state.current_screen = ScreenState.REGISTER
@@ -91,12 +139,22 @@ class ScreenRenderer:
     
     def draw_register_screen(self):
         """Draw register screen."""
-        self.screen.fill(BLACK)
-        draw_text(self.screen, "REGISTER", LARGE_FONT, WHITE, SCREEN_WIDTH // 2 - 120, 50)
+        # Background image
+        self.screen.blit(self.auth_bg, (0, 0))
+
+        # Layout helpers for centering form
+        form_width = 500
+        field_height = 50
+        center_x = SCREEN_WIDTH // 2 - form_width // 2
+
+        # Title centered with slight shadow
+        title_x = SCREEN_WIDTH // 2 - 160
+        draw_text(self.screen, "REGISTER", LARGE_FONT, BLACK, title_x - 2, 43)
+        draw_text(self.screen, "REGISTER", LARGE_FONT, WHITE, title_x, 40)
         
-        # Username field
+        # Username field (lower on screen)
         draw_input_field(
-            self.screen, 200, 150, 464, 40,
+            self.screen, center_x, 460, form_width, field_height,
             self.game_state.register_username,
             self.game_state.current_input_field == "register_username",
             "Username"
@@ -104,7 +162,7 @@ class ScreenRenderer:
         
         # Email field
         draw_input_field(
-            self.screen, 200, 220, 464, 40,
+            self.screen, center_x, 540, form_width, field_height,
             self.game_state.register_email,
             self.game_state.current_input_field == "register_email",
             "Email"
@@ -112,15 +170,28 @@ class ScreenRenderer:
         
         # Password field
         draw_input_field(
-            self.screen, 200, 290, 464, 40,
+            self.screen, center_x, 620, form_width, field_height,
             "*" * len(self.game_state.register_password),
             self.game_state.current_input_field == "register_password",
             "Password"
         )
         
-        # Buttons
-        register_btn = TextButton(200, 370, 200, 50, "Register", SMALL_FONT, WHITE, GREEN, BLUE)
-        back_btn = TextButton(464, 370, 200, 50, "Back to Login", SMALL_FONT, WHITE, GRAY, RED)
+        # Buttons (centered). Place "Back to Login" lower so a single
+        # long mouse click doesn't instantly trigger both screens.
+        btn_width = 180
+        register_btn_y = 680
+        back_btn_y = 681
+        dark_bg = (20, 20, 20)
+        hover_bg = (70, 130, 180)
+
+        register_btn = TextButton(
+            SCREEN_WIDTH // 2 - btn_width - 10, register_btn_y,
+            btn_width, 50, "Register", SMALL_FONT, WHITE, dark_bg, hover_bg
+        )
+        back_btn = TextButton(
+            SCREEN_WIDTH // 2 + 10, back_btn_y,
+            btn_width, 50, "Back to Login", SMALL_FONT, WHITE, dark_bg, hover_bg
+        )
         
         if register_btn.draw(self.screen):
             self.game_state.register_error_message = ""
@@ -148,9 +219,23 @@ class ScreenRenderer:
         
         # Draw error/success messages if present
         if self.game_state.register_error_message:
-            draw_text(self.screen, self.game_state.register_error_message, SMALL_FONT, RED, 200, 450)
+            draw_text(
+                self.screen,
+                self.game_state.register_error_message,
+                SMALL_FONT,
+                RED,
+                center_x,
+                740,
+            )
         elif self.game_state.register_success_message:
-            draw_text(self.screen, self.game_state.register_success_message, SMALL_FONT, GREEN, 200, 450)
+            draw_text(
+                self.screen,
+                self.game_state.register_success_message,
+                SMALL_FONT,
+                GREEN,
+                center_x,
+                740,
+            )
         
         if back_btn.draw(self.screen):
             self.game_state.current_screen = ScreenState.LOGIN
@@ -159,26 +244,39 @@ class ScreenRenderer:
     
     def draw_home_screen(self):
         """Draw home screen with Play button."""
-        self.screen.fill(BLACK)
+        # Background
+        self.screen.blit(self.home_bg, (0, 0))
+        # Title with a subtle shadow for readability
+        draw_text(self.screen, "FLAPPY BIRD", LARGE_FONT, BLACK, SCREEN_WIDTH // 2 - 202, 102)
         draw_text(self.screen, "FLAPPY BIRD", LARGE_FONT, WHITE, SCREEN_WIDTH // 2 - 200, 100)
         
         if self.api_client.user_info:
             welcome_text = f"Welcome, {self.api_client.user_info.get('username', 'Player')}!"
-            draw_text(self.screen, welcome_text, SMALL_FONT, BLUE, SCREEN_WIDTH // 2 - 150, 200)
+            draw_text(self.screen, welcome_text, SMALL_FONT, WHITE, SCREEN_WIDTH // 2 - 150, 200)
             
             if self.api_client.user_info.get('highest_score', 0) > 0:
                 high_score_text = f"High Score: {self.api_client.user_info.get('highest_score', 0)}"
-                draw_text(self.screen, high_score_text, SMALL_FONT, GREEN, SCREEN_WIDTH // 2 - 100, 250)
+                draw_text(self.screen, high_score_text, SMALL_FONT, WHITE, SCREEN_WIDTH // 2 - 100, 250)
         
+        # Buttons with colors chosen to stand out on the background
+        dark_bg = (20, 20, 20)
+        hover_bg = (70, 130, 180)  # steel blue
+
         # Play button
-        play_btn = TextButton(SCREEN_WIDTH // 2 - 100, 350, 200, 60, "PLAY", LARGE_FONT, WHITE, GREEN, BLUE)
+        play_btn = TextButton(
+            SCREEN_WIDTH // 2 - 100, 350, 200, 60,
+            "PLAY", LARGE_FONT, WHITE, dark_bg, hover_bg
+        )
         if play_btn.draw(self.screen):
             self.game_state.start_new_game()
             self.api_client.score_submitted = False
             self.api_client.last_submitted_score = 0
         
         # Leaderboard button
-        leaderboard_btn = TextButton(SCREEN_WIDTH // 2 - 100, 450, 200, 50, "Leaderboard", SMALL_FONT, WHITE, BLUE, GREEN)
+        leaderboard_btn = TextButton(
+            SCREEN_WIDTH // 2 - 100, 450, 200, 50,
+            "Leaderboard", SMALL_FONT, WHITE, dark_bg, hover_bg
+        )
         if leaderboard_btn.draw(self.screen):
             self.game_state.current_screen = ScreenState.LEADERBOARD
             self.api_client.get_leaderboard()
@@ -186,14 +284,20 @@ class ScreenRenderer:
                 self.api_client.get_user_rank()
         
         # Profile button
-        profile_btn = TextButton(SCREEN_WIDTH // 2 - 100, 520, 200, 50, "Profile", SMALL_FONT, WHITE, GRAY, BLUE)
+        profile_btn = TextButton(
+            SCREEN_WIDTH // 2 - 100, 520, 200, 50,
+            "Profile", SMALL_FONT, WHITE, dark_bg, hover_bg
+        )
         if profile_btn.draw(self.screen):
             self.game_state.current_screen = ScreenState.PROFILE
             self.api_client.get_profile()
             self.api_client.get_user_rank()
         
         # Logout button
-        logout_btn = TextButton(SCREEN_WIDTH // 2 - 100, 590, 200, 50, "Logout", SMALL_FONT, WHITE, RED, GRAY)
+        logout_btn = TextButton(
+            SCREEN_WIDTH // 2 - 100, 590, 200, 50,
+            "Logout", SMALL_FONT, WHITE, dark_bg, hover_bg
+        )
         if logout_btn.draw(self.screen):
             self.api_client.logout()
             self.game_state.current_screen = ScreenState.LOGIN
@@ -201,7 +305,9 @@ class ScreenRenderer:
     
     def draw_leaderboard_screen(self):
         """Draw leaderboard screen."""
-        self.screen.fill(BLACK)
+        self.screen.blit(self.profile_bg, (0, 0))
+        # Title with shadow for contrast
+        draw_text(self.screen, "LEADERBOARD", LARGE_FONT, BLACK, SCREEN_WIDTH // 2 - 202, 22)
         draw_text(self.screen, "LEADERBOARD", LARGE_FONT, WHITE, SCREEN_WIDTH // 2 - 200, 20)
         
         if self.api_client.leaderboard_data:
@@ -212,13 +318,16 @@ class ScreenRenderer:
                 score_text = str(entry.get('highest_score', 0))
                 
                 draw_text(self.screen, rank_text, SMALL_FONT, WHITE, 50, y_offset)
-                draw_text(self.screen, username_text, SMALL_FONT, WHITE, 200, y_offset)
-                draw_text(self.screen, score_text, SMALL_FONT, GREEN, 600, y_offset)
+                draw_text(self.screen, username_text, SMALL_FONT, WHITE, 220, y_offset)
+                draw_text(self.screen, score_text, SMALL_FONT, WHITE, 600, y_offset)
                 y_offset += 50
         else:
-            draw_text(self.screen, "No data available", SMALL_FONT, GRAY, SCREEN_WIDTH // 2 - 100, 200)
+            draw_text(self.screen, "No data available", SMALL_FONT, WHITE, SCREEN_WIDTH // 2 - 100, 200)
         
-        back_btn = TextButton(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50, "Back (ESC)", SMALL_FONT, WHITE, GRAY, RED)
+        back_btn = TextButton(
+            SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50,
+            "Back (ESC)", SMALL_FONT, WHITE, (20, 20, 20), (70, 130, 180)
+        )
         if back_btn.draw(self.screen):
             self.game_state.current_screen = ScreenState.HOME
         
@@ -229,7 +338,9 @@ class ScreenRenderer:
     
     def draw_profile_screen(self):
         """Draw profile screen."""
-        self.screen.fill(BLACK)
+        self.screen.blit(self.profile_bg, (0, 0))
+        # Title with shadow for contrast
+        draw_text(self.screen, "PROFILE", LARGE_FONT, BLACK, SCREEN_WIDTH // 2 - 102, 52)
         draw_text(self.screen, "PROFILE", LARGE_FONT, WHITE, SCREEN_WIDTH // 2 - 100, 50)
         
         if self.api_client.user_info:
@@ -239,31 +350,40 @@ class ScreenRenderer:
             draw_text(self.screen, f"Games Played: {self.api_client.user_info.get('games_played', 0)}", SMALL_FONT, WHITE, 200, 300)
         
         if self.api_client.user_rank:
-            draw_text(self.screen, f"Rank: #{self.api_client.user_rank.get('rank', 'N/A')}", SMALL_FONT, GREEN, 200, 350)
+            draw_text(self.screen, f"Rank: #{self.api_client.user_rank.get('rank', 'N/A')}", SMALL_FONT, WHITE, 200, 350)
         
-        back_btn = TextButton(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50, "Back (ESC)", SMALL_FONT, WHITE, GRAY, RED)
+        back_btn = TextButton(
+            SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 100, 200, 50,
+            "Back (ESC)", SMALL_FONT, WHITE, (20, 20, 20), (70, 130, 180)
+        )
         if back_btn.draw(self.screen):
             self.game_state.current_screen = ScreenState.HOME
     
     def draw_heart_puzzle_screen(self, heart_puzzle):
         """Draw heart puzzle lifeline screen."""
-        self.screen.fill(BLACK)
-        draw_text(self.screen, "LIFELINE!", LARGE_FONT, GREEN, SCREEN_WIDTH // 2 - 120, 20)
-        draw_text(self.screen, "Count the hearts to continue", SMALL_FONT, WHITE, SCREEN_WIDTH // 2 - 180, 70)
+        # Background image for heart puzzle
+        self.screen.blit(self.heart_bg, (0, 0))
+        # Title with shadow for contrast
+        draw_text(self.screen, "LIFELINE!", LARGE_FONT, BLACK, SCREEN_WIDTH // 2 - 122, 22)
+        draw_text(self.screen, "LIFELINE!", LARGE_FONT, WHITE, SCREEN_WIDTH // 2 - 120, 20)
+        draw_text(self.screen, "Count the hearts to continue", SMALL_FONT, WHITE, SCREEN_WIDTH // 2 - 180, 80)
         
         if heart_puzzle.image:
             self.screen.blit(heart_puzzle.image, (SCREEN_WIDTH // 2 - 200, 120))
         
         remaining = heart_puzzle.get_remaining_time()
-        draw_text(self.screen, f"Time Left: {remaining}", SMALL_FONT, WHITE, SCREEN_WIDTH // 2 - 80, 540)
+        draw_text(self.screen, f"Time Left: {remaining}", SMALL_FONT, WHITE, SCREEN_WIDTH // 2 - 80, 560)
         
-        pygame.draw.rect(self.screen, WHITE, (SCREEN_WIDTH // 2 - 80, 600, 160, 50), 2)
-        draw_text(self.screen, heart_puzzle.input, SMALL_FONT, WHITE, SCREEN_WIDTH // 2 - 60, 610)
+        # Input box with semi-transparent dark background for better readability
+        input_rect = pygame.Rect(SCREEN_WIDTH // 2 - 80, 620, 160, 50)
+        pygame.draw.rect(self.screen, (0, 0, 0, 180), input_rect)
+        pygame.draw.rect(self.screen, WHITE, input_rect, 2)
+        draw_text(self.screen, heart_puzzle.input, SMALL_FONT, WHITE, SCREEN_WIDTH // 2 - 60, 630)
     
     def draw_countdown_screen(self, bg_img, ground_img, ground_scroll, bird_group, score, remaining_time, flying, game_over, countdown_active):
         """Draw countdown screen after successful lifeline."""
         self.screen.blit(bg_img, (0, 0))
-        self.screen.blit(ground_img, (ground_scroll, 768))
+        self.screen.blit(ground_img, (ground_scroll, GROUND_HEIGHT))
         bird_group.update(flying, game_over, countdown_active)
         bird_group.draw(self.screen)
         
@@ -276,7 +396,7 @@ class ScreenRenderer:
     def draw_game_over_screen(self, bg_img, ground_img, ground_scroll, bird_group, score, remaining_time):
         """Draw game over screen."""
         self.screen.blit(bg_img, (0, 0))
-        self.screen.blit(ground_img, (ground_scroll, 768))
+        self.screen.blit(ground_img, (ground_scroll, GROUND_HEIGHT))
         bird_group.draw(self.screen)
         
         draw_text(self.screen, "GAME OVER", LARGE_FONT, RED, SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 100)
