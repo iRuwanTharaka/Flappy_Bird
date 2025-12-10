@@ -2,48 +2,105 @@
 
 ## What is this
 
-Flappy_Bird is a simple clone/implementation of the classic _Flappy Bird_ game — written in Python (with some JavaScript parts). The game lets you control a “bird” and try to navigate through a series of obstacles (pipes) without crashing.
+A Pygame-based Flappy Bird clone with login/registration, persistent scores, leaderboard, and a heart-puzzle lifeline. The Python game talks to a Node/Express + PostgreSQL backend for auth and score tracking.
 
-This project is meant as a fun exercise / demo of basic game-programming concepts: rendering graphics, simple physics (gravity, collision detection), user input (flapping), and game loops.
+## Project Overview
 
-## Motivation
+- Python game in `flappy.py` with modules in `game/` (rendering, state, API client).
+- Node/Express API in `backend/` for authentication, score submission, leaderboard, and rank.
+- PostgreSQL database (migrations provided) plus a small SQL dump in `db/flappy_bird_db.sql`.
+- Assets live in `img/` (background, bird sprites, pipes, buttons).
 
-I built this project to practice my programming skills and get hands-on experience with game logic, user input handling, rendering, and general project structure. Since I’m studying Computer Science and enjoy learning new things, making a clone of a well-known game felt like a good way to challenge myself.
+## Requirements
 
-## Features
+- Python 3.10+
+- Node.js 18+ and npm
+- PostgreSQL 13+ (any recent version works)
+- Pygame-capable environment (desktop with a display; not headless)
+## Quick Start (Game Only)
 
-- Basic Flappy Bird gameplay: a bird that “flaps” up on keypress and otherwise falls due to gravity.
-- Obstacle generation: pipes (or obstacles) appear and move toward the bird — the player must avoid them.
-- Simple collision detection (bird vs pipes or ground).
-- Score tracking (optionally — depending on your implementation).
-- Assets support (images, sprites) — the project includes an `img/` folder.
+1. Install Python deps
 
-## Requirements / Prerequisites
+```
+python -m venv .venv
+.\.venv\Scripts\activate   # Windows
+pip install -r requirements.txt
+```
 
-- Python 3.x (whatever version you used — specify here)
-- For dependencies listed in `requirements.txt`, you may need to install them via pip.
-- (Optionally) A graphical environment that supports Python rendering (if using a GUI library).
+2. Start the game (uses `http://localhost:3000/api` by default)
 
-## How to Install & Run
+```
+python flappy.py
+```
 
-1. Clone the repository
-   ```bash
-   git clone https://github.com/iRuwanTharaka/Flappy_Bird.git
-   cd Flappy_Bird
-   ```
-2. Create a virtual environment (recommended)
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate   # on Windows: venv\Scripts\activate
-   ```
-3. Install dependencies
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Run the game
-   ```bash
-   python flappy.py
-   ```
+If you only want to fly locally without backend features, the game still runs, but login/leaderboard calls will fail until the API is up.
+
+## Backend Setup (Express + Postgres)
+
+1. Install deps
+
+```
+cd backend
+npm install
+```
+
+2. Create a `.env` in `backend/` (example):
+
+```
+PORT=3000
+JWT_SECRET=change_me
+CORS_ORIGIN=http://localhost:3000
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=flappy_bird_db
+DB_USER=postgres
+DB_PASSWORD=your_password
+```
+
+3. Create the database and run migrations
+
+```
+createdb flappy_bird_db         # or use psql/GUI
+npm run migrate                  # creates users, scores, leaderboard view
+```
+
+4. Start the API
+
+```
+npm run dev   # or: npm start
+```
+
+Health check: `GET http://localhost:3000/health`
+
+## API Endpoints (used by the game)
+
+- `POST /api/auth/register` `{username,email,password}` -> `{token,user}`
+- `POST /api/auth/login` `{username,password}` -> `{token,user}`
+- `GET /api/auth/me` (Bearer token) -> current user
+- `POST /api/scores/submit` `{score, level}` (Bearer token)
+- `GET /api/scores/leaderboard?limit=10`
+- `GET /api/scores/my-rank` (Bearer token)
+
+`game/config.py` points `API_BASE_URL` to `http://localhost:3000/api`. Update it if you host the API elsewhere.
+
+## How to Play
+
+- Launch: `python flappy.py`
+- Controls: `Space` to flap when in-game; `ESC` to return to home or exit screens.
+- Auth screens: type username/password/email; use `Tab` to switch fields; `Enter` to submit.
+- Heart puzzle lifeline: on collision you may get a timed puzzle fetched from `https://marcconrad.com/uob/heart/api.php`. Enter the numeric answer; failing or timing out ends the run.
+- Game over auto-returns to home after 3 seconds and submits score if logged in.
+
+## Project Structure
+
+```
+flappy.py               # game entry point
+game/                   # game logic, rendering, API client, state
+backend/                # Express server (auth + scores)
+db/flappy_bird_db.sql   # SQL dump (reference)
+img/                    # sprites and UI assets
+requirements.txt        # Python deps (pygame, requests)
+```
 
 ## How to Play
 
